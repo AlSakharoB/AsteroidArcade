@@ -120,10 +120,15 @@ class Ticks:
         self.startticks = 0
 
 
+class LifeBar:
+    def __init__(self):
+        self.hp = 100
+
+
 class GameProcess:
     def __init__(self, window, renderer, factory, ticks_):
         world = sdl2.ext.World()
-        movement = MovementSystem(0, 0, 600, 800)
+        movement = MovementSystem(0, 0, 600, 1000)
 
         player_sprite = factory.from_color(YANTARNIJ, size=(25, 25))
         player = Player(world, player_sprite, 288, 600)
@@ -135,14 +140,20 @@ class GameProcess:
         world.add_system(collision)
 
         running = True
+        game_process = True
         minspeed, maxspeed = 2, 4
+
+        life = LifeBar()
         while running:
-            if not collision.cont:
-                print('-1 hp')
+            if not collision.cont and life.hp > 0:
+                life.hp -= 1
+                print(life.hp)
+                if life.hp <= 0:
+                    running = False
+                    print(game_process)
             ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
             gap = Asteroids_(round(ticks / 1000, 1))
             time = round(ticks / 1000, 1)
-            print(gap, time)
             if gap <= 3:
                 minspeed, maxspeed = 4, 7
             if time != 0.0 and time % gap == 0.0:
