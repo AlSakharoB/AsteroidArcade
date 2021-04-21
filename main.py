@@ -5,7 +5,8 @@ import ctypes
 from random import randint
 from PIL import Image
 
-img = Image.open("Start.png")
+img1 = Image.open("StartButton.png")
+img2 = Image.open("Start.png")
 
 WHITE = sdl2.ext.Color(255, 255, 255)
 
@@ -103,7 +104,11 @@ class CollisionSystem(sdl2.ext.Applicator):
     def check_collision(self, sprite):
         left, top, right, bottom = self.player.sprite.area
         bleft, btop, bright, bbottom = sprite.area
-        return (top <= bbottom and right >= bleft and bbottom <= bottom and left <= bright)
+        return (top <= bbottom and right >= bleft and bbottom <= bottom and left <= bright) or \
+               (bottom >= btop and bottom <= bbottom and right >= bleft and left <= bright)
+
+
+
 
     def process(self, world, components):
         self.cont = True
@@ -115,6 +120,7 @@ class CollisionSystem(sdl2.ext.Applicator):
                     break
 
 
+
 class Ticks:
     def __init__(self):
         self.startticks = 0
@@ -122,16 +128,33 @@ class Ticks:
 
 class LifeBar:
     def __init__(self):
-        self.hp = 100
+        self.hp = 200
+
+
+class ShownBar(sdl2.ext.Entity):
+    def __init__(self, world, sprite, x):
+        self.sprite = sprite
+        self.sprite.position = 7 + x, 14
+        self.velocity = Velocity()
+
+
+def Deletion(list):
+    for i in range(len(list)):
+        x, y = list[i].sprite.position
+        if y > 800:
+            list[i].delete()
+            list.pop(i)
+            break
 
 
 class GameProcess:
     def __init__(self, window, renderer, factory, ticks_):
         world = sdl2.ext.World()
-        movement = MovementSystem(0, 0, 600, 1000)
+        movement = MovementSystem(20, 0, 580, 1000)
 
         player_sprite = factory.from_color(YANTARNIJ, size=(25, 25))
         player = Player(world, player_sprite, 288, 600)
+
         collision = CollisionSystem(player)
         spriterenderer = TextureRenderSystem(renderer)
 
@@ -140,26 +163,33 @@ class GameProcess:
         world.add_system(collision)
 
         running = True
-        game_process = True
         minspeed, maxspeed = 2, 4
 
+        asteroids_ = []
+        bars = []
         life = LifeBar()
+        for i in range(200):
+            hp_1 = ShownBar(world, factory.from_color(RED, size=(1, 14)), i)
+            bars.append(hp_1)
         while running:
+            Deletion(asteroids_)
             if not collision.cont and life.hp > 0:
                 life.hp -= 1
-                print(life.hp)
+                bars[life.hp].delete()
                 if life.hp <= 0:
                     running = False
-                    print(game_process)
             ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
             gap = Asteroids_(round(ticks / 1000, 1))
             time = round(ticks / 1000, 1)
             if gap <= 3:
                 minspeed, maxspeed = 4, 7
+            elif time >= 200:
+                minspeed, maxspeed = 6, 10
             if time != 0.0 and time % gap == 0.0:
                 size = randint(10, 40)
                 aster = factory.from_color(WHITE, size=(size, size))
                 asteroid = Asteroids(world, aster)
+                asteroids_.append(asteroid)
                 asteroid.velocity.vy = randint(minspeed, maxspeed)
             for event in sdl2.ext.get_events():
                 if event.type == sdl2.SDL_QUIT:
@@ -192,13 +222,14 @@ def run():
 
     running = True
     while running:
-        renderer.fill([150, 300, 300, 300], WHITE)
-        renderer.draw_line([200, 375, 400, 450], BLACK)
-        renderer.draw_line([200, 525, 400, 450])
-        renderer.draw_line([200, 375, 200, 525], BLACK)
+        for x in range(360):
+            for y in range(220):
+                red, green, blue, hz = img1.getpixel((x, y))
+                if hz == 255:
+                    renderer.draw_point([110 + x, 280 + y], WHITE)
         for x in range(545):
             for y in range(83):
-                hz = img.getpixel((x, y))
+                hz = img2.getpixel((x, y))
                 if hz == 0:
                     renderer.draw_point([30 + x, 183 + y], BLACK)
                 else:
@@ -211,9 +242,10 @@ def run():
                 break
             if event.type == sdl2.SDL_MOUSEBUTTONUP:
                 state = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-                if 150 <= x.value <= 450 and 300 <= y.value <= 600:
+                if 155 <= x.value <= 440 and 325 <= y.value <= 460:
                     ticks_.startticks = sdl2.timer.SDL_GetTicks()
                     GameProcess(window, renderer, factory, ticks_)
+        menu.process()
 
 
 def Asteroids_(time):
