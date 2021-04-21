@@ -128,7 +128,7 @@ class Ticks:
 
 class LifeBar:
     def __init__(self):
-        self.hp = 200
+        self.hp = 100
 
 
 class ShownBar(sdl2.ext.Entity):
@@ -168,8 +168,8 @@ class GameProcess:
         asteroids_ = []
         bars = []
         life = LifeBar()
-        for i in range(200):
-            hp_1 = ShownBar(world, factory.from_color(RED, size=(1, 14)), i)
+        for i in range(100):
+            hp_1 = ShownBar(world, factory.from_color(RED, size=(2, 14)), i*2)
             bars.append(hp_1)
         while running:
             Deletion(asteroids_)
@@ -181,11 +181,11 @@ class GameProcess:
             ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
             gap = Asteroids_(round(ticks / 1000, 1))
             time = round(ticks / 1000, 1)
-            if gap <= 3:
+            if time >= 200:
+                minspeed, maxspeed = 6, 9
+            elif gap <= 3:
                 minspeed, maxspeed = 4, 7
-            elif time >= 200:
-                minspeed, maxspeed = 6, 10
-            if time != 0.0 and time % gap == 0.0:
+            if time != 0.0 and (time % gap == 0.0) or (time % gap == 0.5):
                 size = randint(10, 40)
                 aster = factory.from_color(WHITE, size=(size, size))
                 asteroid = Asteroids(world, aster)
@@ -203,6 +203,7 @@ class GameProcess:
                 elif event.type == sdl2.SDL_KEYUP:
                     if event.key.keysym.sym in (sdl2.SDLK_a, sdl2.SDLK_d):
                         player.velocity.vx = 0
+            window.refresh()
             sdl2.SDL_Delay(10)
             world.process()
         renderer.clear()
@@ -245,6 +246,7 @@ def run():
                 if 155 <= x.value <= 440 and 325 <= y.value <= 460:
                     ticks_.startticks = sdl2.timer.SDL_GetTicks()
                     GameProcess(window, renderer, factory, ticks_)
+        window.refresh()
         menu.process()
 
 
