@@ -3,6 +3,7 @@ import sdl2.ext
 
 tick = Image.open("images\\Tick.png")
 chosetxt = Image.open("images\\Chosetxt.png")
+mainmenu = Image.open("images\\MainMenuButton.png")
 
 WHITE = sdl2.ext.Color(255, 255, 255)
 BLACK = sdl2.ext.Color(0, 0, 0)
@@ -16,6 +17,13 @@ GOLD = sdl2.ext.Color(245, 218, 42)
 PINK = sdl2.ext.Color(255, 51, 255)
 ORANGE = sdl2.ext.Color(255, 153, 51)
 
+
+def DrawButtonMainMenu(renderer):
+    for x in range(191):
+        for y in range(64):
+            pred, green, blue, hz = mainmenu.getpixel((x, y))
+            if hz == 255:
+                renderer.draw_point([20 + x, 720 + y], WHITE)
 
 def DrawChoseText(renderer):
     for x in range(550):

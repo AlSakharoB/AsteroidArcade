@@ -89,7 +89,7 @@ class Player(sdl2.ext.Entity):
 class Asteroids(sdl2.ext.Entity):
     def __init__(self, world, sprite):
         self.sprite = sprite
-        x, y = randint(20, 540), 10
+        x, y = randint(0, 560), 10
         self.sprite.position = x, y
         self.velocity = Velocity()
 
@@ -133,6 +133,12 @@ class LifeBar:
         self.hp = 100
 
 
+class DrawBar(sdl2.ext.Entity):
+    def __init__(self, world, sprite, posx=0, posy=0):
+        self.sprite = sprite
+        self.sprite.position = posx, posy
+
+
 class ShownBar(sdl2.ext.Entity):
     def __init__(self, world, sprite, x):
         self.sprite = sprite
@@ -167,7 +173,7 @@ class GameProcess:
         global skin
 
         world = sdl2.ext.World()
-        movement = MovementSystem(20, 0, 580, 1000)
+        movement = MovementSystem(0, 0, 600, 1000)
 
         player_sprite = factory.from_color(skin, size=(25, 25))
         player = Player(world, player_sprite, 288, 600)
@@ -180,13 +186,16 @@ class GameProcess:
         world.add_system(collision)
 
         running = True
-        minspeed, maxspeed = 2, 4
+        minspeed, maxspeed = 3, 5
 
         asteroids_ = []
         bars = []
+
         life = LifeBar()
+        lf_bg = DrawBar(world, factory.from_color(WHITE, size=(202, 16)), 6, 13)
+        lf_bg_ = DrawBar(world, factory.from_color(BLACK, size=(200, 14)), 7, 14)
         for i in range(100):
-            hp_1 = ShownBar(world, factory.from_color(RED, size=(2, 14)), i*2)
+            hp_1 = ShownBar(world, factory.from_color(skin, size=(2, 14)), i*2)
             bars.append(hp_1)
         while running:
             Deletion(asteroids_)
@@ -214,9 +223,9 @@ class GameProcess:
                     break
                 if event.type == sdl2.SDL_KEYDOWN:
                     if event.key.keysym.sym == sdl2.SDLK_a:
-                        player.velocity.vx = -3
+                        player.velocity.vx = -4
                     elif event.key.keysym.sym == sdl2.SDLK_d:
-                        player.velocity.vx = 3
+                        player.velocity.vx = 4
                 elif event.type == sdl2.SDL_KEYUP:
                     if event.key.keysym.sym in (sdl2.SDLK_a, sdl2.SDLK_d):
                         player.velocity.vx = 0
@@ -224,7 +233,6 @@ class GameProcess:
             sdl2.SDL_Delay(10)
             world.process()
         renderer.clear()
-        return None
 
 
 class Skins:
@@ -236,6 +244,7 @@ class Skins:
 
         running = True
         s.DrawChoseText(renderer)
+        s.DrawButtonMainMenu(renderer)
 
         while running:
             s.DrawColorsSkins(renderer, skin)
@@ -246,7 +255,10 @@ class Skins:
                     break
                 if event.type == sdl2.SDL_MOUSEBUTTONUP:
                     state = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
-                    if 50 <= x.value <= 138 and 140 <= y.value <= 228:
+                    if 28 <= x.value <= 203 and 728 <= y.value <= 784:
+                        running = False
+                        break
+                    elif 50 <= x.value <= 138 and 140 <= y.value <= 228:
                         skin = RED
                     elif 188 <= x.value <= 276 and 140 <= y.value <= 228:
                         skin = ORANGE
@@ -268,7 +280,7 @@ class Skins:
 
 
 def run():
-    window = sdl2.ext.Window("Maze", size=(600, 800))
+    window = sdl2.ext.Window("Asteroid Crash", size=(600, 800))
     window.show()
 
     menu = sdl2.ext.World()
