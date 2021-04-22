@@ -3,10 +3,7 @@ from sdl2.ext import SOFTWARE
 import sdl2.ext
 import ctypes
 from random import randint
-from PIL import Image
-
-img1 = Image.open("StartButton.png")
-img2 = Image.open("Start.png")
+import DrawPics as d
 
 WHITE = sdl2.ext.Color(255, 255, 255)
 
@@ -21,6 +18,7 @@ EZ_GREEN = sdl2.ext.Color(154, 244, 102)
 DARK_EMERALD = sdl2.ext.Color(38, 153, 128)
 
 DARK_GREY = sdl2.ext.Color(80, 80, 80)
+EX_GREY = sdl2.ext.Color(165, 165, 165)
 EX_BLACK = sdl2.ext.Color(35, 35, 35)
 BLACK = sdl2.ext.Color(0, 0, 0)
 BROWN = sdl2.ext.Color(143, 71, 36)
@@ -107,9 +105,6 @@ class CollisionSystem(sdl2.ext.Applicator):
         return (top <= bbottom and right >= bleft and bbottom <= bottom and left <= bright) or \
                (bottom >= btop and bottom <= bbottom and right >= bleft and left <= bright)
 
-
-
-
     def process(self, world, components):
         self.cont = True
         collitems = [comp for comp in components if self.check(comp)]
@@ -118,7 +113,6 @@ class CollisionSystem(sdl2.ext.Applicator):
                 if self.check_collision(sprite):
                     self.cont = False
                     break
-
 
 
 class Ticks:
@@ -145,6 +139,19 @@ def Deletion(list):
             list[i].delete()
             list.pop(i)
             break
+
+
+def Asteroids_(time):
+    if time <= 10:
+        return 5
+    elif time <= 50:
+        return 4
+    elif time <= 100:
+        return 3
+    elif time <= 160:
+        return 2
+    else:
+        return 1
 
 
 class GameProcess:
@@ -223,18 +230,9 @@ def run():
 
     running = True
     while running:
-        for x in range(360):
-            for y in range(220):
-                red, green, blue, hz = img1.getpixel((x, y))
-                if hz == 255:
-                    renderer.draw_point([110 + x, 280 + y], WHITE)
-        for x in range(545):
-            for y in range(83):
-                hz = img2.getpixel((x, y))
-                if hz == 0:
-                    renderer.draw_point([30 + x, 183 + y], BLACK)
-                else:
-                    renderer.draw_point([30 + x, 183 + y], WHITE)
+        d.DrawPlayButton(renderer)
+        d.StartGamePic(renderer)
+        d.DrawCopyrights(renderer)
         renderer.present()
         for event in sdl2.ext.get_events():
             x, y = ctypes.c_int(0), ctypes.c_int(0)
@@ -250,17 +248,7 @@ def run():
         menu.process()
 
 
-def Asteroids_(time):
-    if time <= 10:
-        return 5
-    elif time <= 50:
-        return 4
-    elif time <= 100:
-        return 3
-    elif time <= 160:
-        return 2
-    else:
-        return 1
+
 
 
 if __name__ == "__main__":
