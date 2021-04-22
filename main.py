@@ -3,14 +3,19 @@ from sdl2.ext import SOFTWARE
 import sdl2.ext
 import ctypes
 from random import randint
-import DrawPics as d
+import DrawMenu as d
+import DrawSkins as s
 
 WHITE = sdl2.ext.Color(255, 255, 255)
 
 YANTARNIJ = sdl2.ext.Color(245, 230, 191)
 GOLD = sdl2.ext.Color(245, 218, 42)
 
+ORANGE = sdl2.ext.Color(255, 153, 51)
+
 RED = sdl2.ext.Color(244, 83, 41)
+
+PINK = sdl2.ext.Color(255, 51, 255)
 
 SALAT = sdl2.ext.Color(190, 245, 116)
 SHARTREZ = sdl2.ext.Color(127, 255, 0)
@@ -26,6 +31,9 @@ BROWN = sdl2.ext.Color(143, 71, 36)
 AQUA = sdl2.ext.Color(0, 255, 255)
 
 sdl2.ext.init()
+
+skin = YANTARNIJ
+
 
 class Velocity(object):
     def __init__(self):
@@ -156,10 +164,12 @@ def Asteroids_(time):
 
 class GameProcess:
     def __init__(self, window, renderer, factory, ticks_):
+        global skin
+
         world = sdl2.ext.World()
         movement = MovementSystem(20, 0, 580, 1000)
 
-        player_sprite = factory.from_color(YANTARNIJ, size=(25, 25))
+        player_sprite = factory.from_color(skin, size=(25, 25))
         player = Player(world, player_sprite, 288, 600)
 
         collision = CollisionSystem(player)
@@ -185,9 +195,9 @@ class GameProcess:
                 bars[life.hp].delete()
                 if life.hp <= 0:
                     running = False
-            ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
-            gap = Asteroids_(round(ticks / 1000, 1))
-            time = round(ticks / 1000, 1)
+            game_ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
+            gap = Asteroids_(round(game_ticks / 1000, 1))
+            time = round(game_ticks / 1000, 1)
             if time >= 200:
                 minspeed, maxspeed = 6, 9
             elif gap <= 3:
@@ -217,6 +227,46 @@ class GameProcess:
         return None
 
 
+class Skins:
+    def __init__(self, window, renderer):
+        global skin
+
+        renderer.clear()
+        skin_ = sdl2.ext.World()
+
+        running = True
+        s.DrawChoseText(renderer)
+
+        while running:
+            s.DrawColorsSkins(renderer, skin)
+            for event in sdl2.ext.get_events():
+                x, y = ctypes.c_int(0), ctypes.c_int(0)
+                if event.type == sdl2.SDL_QUIT:
+                    running = False
+                    break
+                if event.type == sdl2.SDL_MOUSEBUTTONUP:
+                    state = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
+                    if 50 <= x.value <= 138 and 140 <= y.value <= 228:
+                        skin = RED
+                    elif 188 <= x.value <= 276 and 140 <= y.value <= 228:
+                        skin = ORANGE
+                    elif 326 <= x.value <= 414 and 140 <= y.value <= 228:
+                        skin = GOLD
+                    elif 464 <= x.value <= 552 and 140 <= y.value <= 228:
+                        skin = YANTARNIJ
+                    elif 50 <= x.value <= 138 and 278 <= y.value <= 366:
+                        skin = DARK_EMERALD
+                    elif 188 <= x.value <= 276 and 278 <= y.value <= 366:
+                        skin = SALAT
+                    elif 326 <= x.value <= 414 and 278 <= y.value <= 366:
+                        skin = AQUA
+                    elif 464 <= x.value <= 552 and 278 <= y.value <= 366:
+                        skin = PINK
+            window.refresh()
+            skin_.process()
+            renderer.present()
+
+
 def run():
     window = sdl2.ext.Window("Maze", size=(600, 800))
     window.show()
@@ -233,6 +283,8 @@ def run():
         d.DrawPlayButton(renderer)
         d.StartGamePic(renderer)
         d.DrawCopyrights(renderer)
+        d.DrawSkinButton(renderer)
+        d.DrawRuleButton(renderer)
         renderer.present()
         for event in sdl2.ext.get_events():
             x, y = ctypes.c_int(0), ctypes.c_int(0)
@@ -244,11 +296,11 @@ def run():
                 if 155 <= x.value <= 440 and 325 <= y.value <= 460:
                     ticks_.startticks = sdl2.timer.SDL_GetTicks()
                     GameProcess(window, renderer, factory, ticks_)
+                elif 115 <= x.value <= 295 and 510 <= y.value <= 600:
+                    Skins(window, renderer)
+                    renderer.clear()
         window.refresh()
         menu.process()
-
-
-
 
 
 if __name__ == "__main__":
