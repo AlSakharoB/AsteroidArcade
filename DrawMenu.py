@@ -6,10 +6,18 @@ EX_GREY = sdl2.ext.Color(165, 165, 165)
 BLACK = sdl2.ext.Color(0, 0, 0)
 
 img1 = Image.open("images\\StartButton.png")
-img2 = Image.open("images\\Start.png")
+img2 = Image.open("images\\Name.png")
 img3 = Image.open("images\\copyrights.png")
 img4 = Image.open("images\\SkinButton.png")
 img5 = Image.open("images\\RuleButton.png")
+
+
+def Manu(renderer):
+    DrawCopyrights(renderer)
+    DrawPlayButton(renderer)
+    DrawRuleButton(renderer)
+    DrawSkinButton(renderer)
+    DrawName(renderer)
 
 
 def DrawCopyrights(renderer):
@@ -28,14 +36,12 @@ def DrawPlayButton(renderer):
                 renderer.draw_point([110 + x, 280 + y], WHITE)
 
 
-def StartGamePic(renderer):
-    for x in range(545):
-        for y in range(83):
-            hz = img2.getpixel((x, y))
-            if hz == 0:
-                renderer.draw_point([30 + x, 183 + y], BLACK)
-            else:
-                renderer.draw_point([30 + x, 183 + y], WHITE)
+def DrawName(renderer):
+    for x in range(527):
+        for y in range(69):
+            tr_, hz = img2.getpixel((x, y))
+            if hz == 255:
+                renderer.draw_point([36 + x, 145 + y], WHITE)
 
 
 def DrawSkinButton(renderer):

@@ -5,6 +5,8 @@ import ctypes
 from random import randint
 import DrawMenu as d
 import DrawSkins as s
+import DrawGame as g
+import Prints as p
 
 WHITE = sdl2.ext.Color(255, 255, 255)
 
@@ -23,7 +25,7 @@ EZ_GREEN = sdl2.ext.Color(154, 244, 102)
 DARK_EMERALD = sdl2.ext.Color(38, 153, 128)
 
 DARK_GREY = sdl2.ext.Color(80, 80, 80)
-EX_GREY = sdl2.ext.Color(165, 165, 165)
+EX_GREY = sdl2.ext.Color(128, 128, 128)
 EX_BLACK = sdl2.ext.Color(35, 35, 35)
 BLACK = sdl2.ext.Color(0, 0, 0)
 BROWN = sdl2.ext.Color(143, 71, 36)
@@ -75,7 +77,6 @@ class TextureRenderSystem(sdl2.ext.TextureSpriteRenderSystem):
 
     def render(self, components):
         self.renderer.color = BLACK
-        self.renderer.clear()
         super(TextureRenderSystem, self).render(components)
 
 
@@ -89,7 +90,7 @@ class Player(sdl2.ext.Entity):
 class Asteroids(sdl2.ext.Entity):
     def __init__(self, world, sprite):
         self.sprite = sprite
-        x, y = randint(0, 560), 10
+        x, y = randint(0, 560), 43
         self.sprite.position = x, y
         self.velocity = Velocity()
 
@@ -133,23 +134,16 @@ class LifeBar:
         self.hp = 100
 
 
-class DrawBar(sdl2.ext.Entity):
-    def __init__(self, world, sprite, posx=0, posy=0):
-        self.sprite = sprite
-        self.sprite.position = posx, posy
+class Score:
+    def __init__(self):
+        self.score = 0
 
 
-class ShownBar(sdl2.ext.Entity):
-    def __init__(self, world, sprite, x):
-        self.sprite = sprite
-        self.sprite.position = 7 + x, 14
-        self.velocity = Velocity()
-
-
-def Deletion(list):
+def Deletion(list, score):
     for i in range(len(list)):
         x, y = list[i].sprite.position
         if y > 800:
+            score.score += list[i].velocity.vy * 5
             list[i].delete()
             list.pop(i)
             break
@@ -169,8 +163,10 @@ def Asteroids_(time):
 
 
 class GameProcess:
-    def __init__(self, window, renderer, factory, ticks_):
+    def __init__(self, window, renderer, factory, ticks_, score):
         global skin
+
+        renderer.clear()
 
         world = sdl2.ext.World()
         movement = MovementSystem(0, 0, 600, 1000)
@@ -189,24 +185,29 @@ class GameProcess:
         minspeed, maxspeed = 3, 5
 
         asteroids_ = []
-        bars = []
 
         life = LifeBar()
-        lf_bg = DrawBar(world, factory.from_color(WHITE, size=(202, 16)), 6, 13)
-        lf_bg_ = DrawBar(world, factory.from_color(BLACK, size=(200, 14)), 7, 14)
-        for i in range(100):
-            hp_1 = ShownBar(world, factory.from_color(skin, size=(2, 14)), i*2)
-            bars.append(hp_1)
+        renderer.fill([14, 14, 25, 20], skin)
+        g.DrawLifeBar(renderer)
+
         while running:
-            Deletion(asteroids_)
+            renderer.fill([0, 43, 800, 757], BLACK)
+            renderer.fill([59, 20, 200, 15], BLACK)
+            renderer.fill([59, 20, life.hp * 2, 15], skin)
+            renderer.fill([59, 20, 5, 5], EX_GREY)
+
+            Deletion(asteroids_, score)
+
             if not collision.cont and life.hp > 0:
                 life.hp -= 1
-                bars[life.hp].delete()
                 if life.hp <= 0:
                     running = False
+
             game_ticks = sdl2.timer.SDL_GetTicks() - ticks_.startticks
+            score.score += game_ticks // 5000
             gap = Asteroids_(round(game_ticks / 1000, 1))
             time = round(game_ticks / 1000, 1)
+
             if time >= 200:
                 minspeed, maxspeed = 6, 9
             elif gap <= 3:
@@ -277,6 +278,7 @@ class Skins:
             window.refresh()
             skin_.process()
             renderer.present()
+        renderer.clear()
 
 
 def run():
@@ -290,14 +292,10 @@ def run():
 
     ticks_ = Ticks()
 
+    d.Manu(renderer)
+
     running = True
     while running:
-        d.DrawPlayButton(renderer)
-        d.StartGamePic(renderer)
-        d.DrawCopyrights(renderer)
-        d.DrawSkinButton(renderer)
-        d.DrawRuleButton(renderer)
-        renderer.present()
         for event in sdl2.ext.get_events():
             x, y = ctypes.c_int(0), ctypes.c_int(0)
             if event.type == sdl2.SDL_QUIT:
@@ -306,11 +304,17 @@ def run():
             if event.type == sdl2.SDL_MOUSEBUTTONUP:
                 state = sdl2.mouse.SDL_GetMouseState(ctypes.byref(x), ctypes.byref(y))
                 if 155 <= x.value <= 440 and 325 <= y.value <= 460:
+                    score = Score()
                     ticks_.startticks = sdl2.timer.SDL_GetTicks()
-                    GameProcess(window, renderer, factory, ticks_)
-                elif 115 <= x.value <= 295 and 510 <= y.value <= 600:
+                    GameProcess(window, renderer, factory, ticks_, score)
+                    p.PrintScore(score.score)
+                    d.Manu(renderer)
+                elif 115 <= x.value <= 295 and 510 <= y.value <= 590:
                     Skins(window, renderer)
-                    renderer.clear()
+                    d.Manu(renderer)
+                elif 305 <= x.value <= 485 and 510 <= y.value <= 590:
+                    p.PrintRules()
+        renderer.present()
         window.refresh()
         menu.process()
 
