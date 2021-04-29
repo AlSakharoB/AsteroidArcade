@@ -282,7 +282,7 @@ class Skins:
 
 
 def run():
-    window = sdl2.ext.Window("Asteroid Crash", size=(600, 800))
+    window = sdl2.ext.Window("Asteroid Crash!", size=(600, 800))
     window.show()
 
     menu = sdl2.ext.World()
